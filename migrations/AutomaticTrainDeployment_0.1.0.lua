@@ -28,9 +28,12 @@ local function train_by_station(station)
 	return nil
 end
 
+--Till223: this took forever(10+ minutes) when loading a map so I commented it out
+--it seems to work fine for a 0.1.7 map, migrating older maps might not work properly anymore
+--[[ 
 --move all source trains from the old way of doing things to the new
 --tries to find all valid source trains and removes the current destination from the schedule
-for _, surface in pairs(game.surfaces) do
+ for _, surface in pairs(game.surfaces) do
 	for _, station in ipairs(surface.find_entities_filtered{name = "AutomaticTrainDeployment-read-stop"}) do
 		local train = train_by_station(station)
 		if train then
@@ -41,7 +44,7 @@ for _, surface in pairs(game.surfaces) do
 			train.manual_mode = true
 		end
 	end
-end
+end ]]--
 
 for _,player in pairs(game.connected_players) do
 	player.print("Automatic train deployment: important changes from previous version:")
