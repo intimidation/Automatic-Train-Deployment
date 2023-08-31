@@ -57,7 +57,7 @@ script.on_event(defines.events.on_train_changed_state, function (event)
 		local trigger_stop = trigger.path_end_stop
 		local source, source_stop = helpers.find_source_train(trigger_stop)
 
-		if source == nil then
+		if source == nil or source.schedule == nil then
 			--game.players[1].print("no source train")
 			return
 		end
@@ -78,7 +78,7 @@ script.on_event(defines.events.on_train_changed_state, function (event)
 
 		--randomize the schedule?
 		if trigger_stop.name == AutomaticTrainDeployment_defines.names.entities.randomStop then
-			new.schedule = helpers.randomize_schedule(source)
+			new.schedule = helpers.randomize_schedule(table.deepcopy(source.schedule))
 		end
 
 		local auto = circuitAuto == "Auto"
@@ -100,6 +100,23 @@ script.on_event(defines.events.on_train_changed_state, function (event)
 
 		--set the train to automatic
 		new.manual_mode = not auto 
+
+		--checks whether there is a valid path to the current stop and removes it from the schedule when there is none
+		while not new.manual_mode
+				and not new.has_path 
+				and trigger_stop.name == AutomaticTrainDeployment_defines.names.entities.randomStop
+				and helpers.table_length(new.schedule.records) > 0 do
+			if helpers.table_length(new.schedule.records) == 1 then
+				for _, cart in pairs(new.carriages) do
+					cart.destroy()
+				end
+				return;
+			end
+			local copy = new.schedule
+			table.remove(copy.records, copy.current)
+			copy.current = 1
+			new.schedule = helpers.randomize_schedule(copy)
+		end
 		new.speed = (circuitSpeed and speed > 0 and speed) or 0
 	end
 end)
